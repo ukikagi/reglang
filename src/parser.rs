@@ -3,6 +3,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::character::complete::satisfy;
+use nom::combinator::all_consuming;
 use nom::combinator::map;
 use nom::combinator::value;
 use nom::error::Error;
@@ -14,7 +15,7 @@ use nom::Finish;
 use nom::IResult;
 
 pub fn parse_regexp(input: &str) -> Result<RegExp, Error<&str>> {
-  let (input, result) = nom::combinator::all_consuming(regexp)(input).finish()?;
+  let (input, result) = all_consuming(regexp)(input).finish()?;
   assert!(input.is_empty());
   Ok(result)
 }
@@ -40,7 +41,7 @@ fn concatexp(input: &str) -> IResult<&str, RegExp> {
 }
 
 fn repeatexp(input: &str) -> IResult<&str, RegExp> {
-  // Fow now a pattern like a+* is prohibited unlike dk.brics.automaton for simplicity
+  // Fow now a pattern like a** is prohibited unlike dk.brics.automaton for simplicity
   // cf. https://www.brics.dk/automaton/doc/dk/brics/automaton/RegExp.html
   alt((map(terminated(complexp, tag("*")), star), complexp))(input)
 }
