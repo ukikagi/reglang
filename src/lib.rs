@@ -1,2 +1,2 @@
-mod ast;
-mod parser;
+mod automaton;
+mod regexp;

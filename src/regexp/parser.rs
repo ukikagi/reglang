@@ -76,7 +76,7 @@ fn charexp(input: &str) -> IResult<&str, RegExp> {
 #[cfg(test)]
 mod tests {
   use super::parse_regexp;
-  use crate::ast::*;
+  use crate::regexp::ast::*;
 
   #[test]
   fn test_empty() {
