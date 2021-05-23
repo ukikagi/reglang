@@ -1,6 +1,6 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RegExp {
-  Empty(),
+  Empty,
   Literal(char),
   Concat(Box<RegExp>, Box<RegExp>),
   Union(Box<RegExp>, Box<RegExp>),
@@ -12,7 +12,7 @@ impl RegExp {
   pub fn to_string(&self) -> String {
     use RegExp::*;
     match self {
-      Empty() => String::from("#"),
+      Empty => String::from("#"),
       Literal(c) => c.to_string(),
       Concat(lhs, rhs) => format!(
         "({})({})",
@@ -30,7 +30,7 @@ impl RegExp {
 }
 
 pub fn empty() -> RegExp {
-  RegExp::Empty()
+  RegExp::Empty
 }
 
 pub fn literal(x: char) -> RegExp {
