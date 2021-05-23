@@ -110,4 +110,13 @@ mod tests {
     ));
     assert_eq!(parse_regexp("(a|b)*c*"), Ok(expected));
   }
+
+  #[test]
+  fn test_reparse() {
+    let expected = concat((
+      star(union((literal('a'), literal('b')))),
+      star(literal('c')),
+    ));
+    assert_eq!(parse_regexp(&expected.to_string()), Ok(expected));
+  }
 }

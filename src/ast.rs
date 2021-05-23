@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RegExp {
   Empty(),
@@ -5,6 +7,28 @@ pub enum RegExp {
   Concat(Box<RegExp>, Box<RegExp>),
   Union(Box<RegExp>, Box<RegExp>),
   Star(Box<RegExp>),
+}
+
+impl RegExp {
+  // TODO: make it prettier
+  pub fn to_string(&self) -> String {
+    use RegExp::*;
+    match self {
+      Empty() => String::from("#"),
+      Literal(c) => c.to_string(),
+      Concat(lhs, rhs) => format!(
+        "({})({})",
+        lhs.as_ref().to_string(),
+        rhs.as_ref().to_string()
+      ),
+      Union(lhs, rhs) => format!(
+        "({})|({})",
+        lhs.as_ref().to_string(),
+        rhs.as_ref().to_string()
+      ),
+      Star(re) => format!("({})*", re.as_ref().to_string()),
+    }
+  }
 }
 
 pub fn empty() -> RegExp {
