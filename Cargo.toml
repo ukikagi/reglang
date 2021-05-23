@@ -1,8 +1,8 @@
 [package]
-name = "reglang"
-version = "0.1.0"
 authors = ["wataru"]
 edition = "2018"
+name = "reglang"
+version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
