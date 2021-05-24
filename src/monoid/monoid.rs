@@ -1,4 +1,4 @@
-use crate::error::soft_assert;
+use anyhow::{ensure, Result};
 
 struct Monoid {
   size: usize,
@@ -10,14 +10,24 @@ impl Monoid {
   pub fn new<Matrix: AsRef<[Row]>, Row: AsRef<[usize]>>(
     size: usize,
     matrix: Matrix,
-  ) -> Result<Self, String> {
+  ) -> Result<Self> {
     let matrix = matrix.as_ref();
-    soft_assert(matrix.len() == size, format!(""))?;
+    ensure!(
+      matrix.len() == size,
+      "Number of matrix rows ({}) must match `size` ({})",
+      matrix.len(),
+      size
+    );
     let mut operation = Vec::<Vec<usize>>::new();
 
     for row in matrix {
       let row = row.as_ref();
-      soft_assert(row.len() == size, format!(""))?;
+      ensure!(
+        row.len() == size,
+        "Number of matrix columns ({}) must match `size` ({})",
+        row.len(),
+        size
+      );
       operation.push(row.to_vec());
     }
     Ok(Monoid { size, operation })

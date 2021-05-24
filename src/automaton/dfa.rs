@@ -1,4 +1,4 @@
-use crate::error::soft_assert;
+use anyhow::{ensure, Result};
 use std::collections::HashMap;
 
 struct Dfa {
@@ -15,32 +15,27 @@ impl Dfa {
     initial_state: usize,
     accepted: Vec<bool>,
     transitions: HashMap<char, Vec<usize>>,
-  ) -> Result<Self, String> {
-    soft_assert(
+  ) -> Result<Self> {
+    ensure!(
       initial_state < size,
-      format!(
-        "'initial_state' is {}; must be smaller than {}",
-        initial_state, size
-      ),
-    )?;
-    soft_assert(
+      "'initial_state' is {}; must be smaller than {}",
+      initial_state,
+      size
+    );
+    ensure!(
       accepted.len() == size,
-      format!(
-        "The length of 'accepted' is {}; must be {}",
-        accepted.len(),
-        size
-      ),
-    )?;
+      "The length of 'accepted' is {}; must be {}",
+      accepted.len(),
+      size
+    );
     for (key, value) in &transitions {
-      soft_assert(
+      ensure!(
         value.len() == size,
-        format!(
-          "The transition rule length for the character {} is {}; must be {}",
-          key,
-          value.len(),
-          size
-        ),
-      )?;
+        "The transition rule length for the character {} is {}; must be {}",
+        key,
+        value.len(),
+        size
+      );
     }
 
     Ok(Dfa {
