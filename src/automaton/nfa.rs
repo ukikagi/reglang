@@ -1,7 +1,7 @@
 use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
 
-struct State {
+pub struct State {
   initial: bool,
   accepted: bool,
   transitions: HashMap<Option<char>, HashSet<usize>>,
@@ -19,7 +19,7 @@ impl State {
 
 type SubsetState = HashSet<usize>;
 
-struct Nfa {
+pub struct Nfa {
   alphabet: HashSet<char>,
   states: Vec<State>,
 }
