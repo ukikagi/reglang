@@ -1,12 +1,11 @@
 use crate::error::soft_assert;
-use std::collections::{HashMap, HashSet};
-use std::hash::Hash;
 
 struct Monoid {
   size: usize,
   operation: Vec<Vec<usize>>,
 }
 
+#[allow(dead_code)]
 impl Monoid {
   pub fn new<Matrix: AsRef<[Row]>, Row: AsRef<[usize]>>(
     size: usize,
@@ -26,6 +25,10 @@ impl Monoid {
 
   fn op(&self, x: usize, y: usize) -> Result<usize, String> {
     Ok(self.operation[x][y])
+  }
+
+  fn size(&self) -> usize {
+    self.size
   }
 }
 

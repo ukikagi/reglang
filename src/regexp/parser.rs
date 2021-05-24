@@ -1,19 +1,19 @@
-use super::ast::{concat, empty, literal, star, union, RegExp};
+use super::ast::{concat, empty, literal, star, union, unit, RegExp};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::char;
 use nom::character::complete::satisfy;
 use nom::combinator::all_consuming;
 use nom::combinator::map;
 use nom::combinator::value;
 use nom::error::Error;
+use nom::multi::many1;
+use nom::multi::separated_list1;
 use nom::sequence::delimited;
-use nom::sequence::pair;
-use nom::sequence::separated_pair;
 use nom::sequence::terminated;
 use nom::Finish;
 use nom::IResult;
 
+#[allow(dead_code)]
 pub fn parse_regexp(input: &str) -> Result<RegExp, Error<&str>> {
   let (input, result) = all_consuming(regexp)(input).finish()?;
   assert!(input.is_empty());
@@ -25,10 +25,7 @@ fn regexp(input: &str) -> IResult<&str, RegExp> {
 }
 
 fn unionexp(input: &str) -> IResult<&str, RegExp> {
-  alt((
-    map(separated_pair(interexp, tag("|"), unionexp), union),
-    interexp,
-  ))(input)
+  map(separated_list1(tag("|"), interexp), union)(input)
 }
 
 fn interexp(input: &str) -> IResult<&str, RegExp> {
@@ -37,7 +34,7 @@ fn interexp(input: &str) -> IResult<&str, RegExp> {
 }
 
 fn concatexp(input: &str) -> IResult<&str, RegExp> {
-  alt((map(pair(repeatexp, concatexp), concat), repeatexp))(input)
+  map(many1(repeatexp), concat)(input)
 }
 
 fn repeatexp(input: &str) -> IResult<&str, RegExp> {
@@ -63,7 +60,8 @@ fn simpleexp(input: &str) -> IResult<&str, RegExp> {
   // () : empty string
   alt((
     charexp,
-    value(empty(), char('#')),
+    value(empty(), tag("#")),
+    value(unit(), tag("()")),
     delimited(tag("("), unionexp, tag(")")),
   ))(input)
 }
@@ -84,18 +82,29 @@ mod tests {
   }
 
   #[test]
+  fn test_epsilon() {
+    assert_eq!(parse_regexp("()"), Ok(unit()));
+  }
+
+  #[test]
   fn test_literal() {
     assert_eq!(parse_regexp("a"), Ok(literal('a')));
   }
 
   #[test]
   fn test_concat() {
-    assert_eq!(parse_regexp("ab"), Ok(concat((literal('a'), literal('b')))));
+    assert_eq!(
+      parse_regexp("ab"),
+      Ok(concat(&[literal('a'), literal('b')]))
+    );
   }
 
   #[test]
   fn test_union() {
-    assert_eq!(parse_regexp("a|b"), Ok(union((literal('a'), literal('b')))));
+    assert_eq!(
+      parse_regexp("a|b"),
+      Ok(union(&[literal('a'), literal('b')]))
+    );
   }
 
   #[test]
@@ -105,19 +114,19 @@ mod tests {
 
   #[test]
   fn test_composite() {
-    let expected = concat((
-      star(union((literal('a'), literal('b')))),
+    let expected = concat([
+      star(union(&[literal('a'), literal('b')])),
       star(literal('c')),
-    ));
+    ]);
     assert_eq!(parse_regexp("(a|b)*c*"), Ok(expected));
   }
 
   #[test]
   fn test_reparse() {
-    let expected = concat((
-      star(union((literal('a'), literal('b')))),
+    let expected = concat([
+      star(union(&[literal('a'), literal('b')])),
       star(literal('c')),
-    ));
+    ]);
     assert_eq!(parse_regexp(&expected.to_string()), Ok(expected));
   }
 }

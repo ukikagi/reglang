@@ -8,6 +8,7 @@ struct Dfa {
   transitions: HashMap<char, Vec<usize>>,
 }
 
+#[allow(dead_code)]
 impl Dfa {
   pub fn new(
     size: usize,
@@ -53,10 +54,10 @@ impl Dfa {
   pub fn run(&self, input: &str) -> Result<bool, String> {
     let mut state = self.initial_state;
     for c in input.chars() {
-      match self.transitions.get(&c) {
-        Some(map) => state = map[state],
-        None => return Err(format!("'{0}' is not found in transitions.", c)),
-      }
+      state = self
+        .transitions
+        .get(&c)
+        .ok_or(format!("'{0}' is not found in transitions.", c))?[state];
     }
     Ok(self.accepted[state])
   }

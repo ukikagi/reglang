@@ -1,30 +1,37 @@
+use itertools::Itertools;
+use std::fmt;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RegExp {
   Empty,
+  Unit,
   Literal(char),
-  Concat(Box<RegExp>, Box<RegExp>),
-  Union(Box<RegExp>, Box<RegExp>),
+  Concat(Vec<RegExp>),
+  Union(Vec<RegExp>),
   Star(Box<RegExp>),
 }
 
-impl RegExp {
+impl fmt::Display for RegExp {
   // TODO: make it prettier
-  pub fn to_string(&self) -> String {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     use RegExp::*;
     match self {
-      Empty => String::from("#"),
-      Literal(c) => c.to_string(),
-      Concat(lhs, rhs) => format!(
-        "({})({})",
-        lhs.as_ref().to_string(),
-        rhs.as_ref().to_string()
-      ),
-      Union(lhs, rhs) => format!(
-        "({})|({})",
-        lhs.as_ref().to_string(),
-        rhs.as_ref().to_string()
-      ),
-      Star(re) => format!("({})*", re.as_ref().to_string()),
+      Empty => write!(f, "#"),
+      Unit => write!(f, "()"),
+      Literal(c) => write!(f, "{}", c),
+      Concat(rs) => {
+        let formatter = rs
+          .iter()
+          .format_with("", |elt, f| f(&format_args!("({})", elt)));
+        write!(f, "{}", formatter)
+      }
+      Union(rs) => {
+        let formatter = rs
+          .iter()
+          .format_with("|", |elt, f| f(&format_args!("({})", elt)));
+        write!(f, "{}", formatter)
+      }
+      Star(r) => write!(f, "({})*", r.as_ref()),
     }
   }
 }
@@ -33,16 +40,30 @@ pub fn empty() -> RegExp {
   RegExp::Empty
 }
 
+pub fn unit() -> RegExp {
+  RegExp::Unit
+}
+
 pub fn literal(x: char) -> RegExp {
   RegExp::Literal(x)
 }
 
-pub fn concat((left, right): (RegExp, RegExp)) -> RegExp {
-  RegExp::Concat(Box::new(left), Box::new(right))
+pub fn concat<Rs: AsRef<[RegExp]>>(res: Rs) -> RegExp {
+  let res = res.as_ref();
+  match res.len() {
+    0 => RegExp::Unit,
+    1 => res[0].clone(),
+    _ => RegExp::Concat(res.to_vec()),
+  }
 }
 
-pub fn union((left, right): (RegExp, RegExp)) -> RegExp {
-  RegExp::Union(Box::new(left), Box::new(right))
+pub fn union<Rs: AsRef<[RegExp]>>(res: Rs) -> RegExp {
+  let res = res.as_ref();
+  match res.len() {
+    0 => RegExp::Empty,
+    1 => res[0].clone(),
+    _ => RegExp::Union(res.to_vec()),
+  }
 }
 
 pub fn star(re: RegExp) -> RegExp {
