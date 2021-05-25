@@ -1,14 +1,6 @@
+use super::lazy_nfa::LazyNfa;
 use anyhow::Result;
 use itertools::Itertools;
-use std::hash::Hash;
-
-trait LazyNfa {
-  type State: Eq + Hash + Ord + Clone;
-
-  fn initial_state(&self) -> Vec<Self::State>;
-  fn accepted(&self, s: &Self::State) -> bool;
-  fn advance(&self, s: &Self::State, c: char) -> Result<Vec<Self::State>>;
-}
 
 struct UnionNfa<L: LazyNfa, R: LazyNfa> {
   left: L,
